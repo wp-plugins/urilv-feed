@@ -179,16 +179,16 @@ function urilv_conf() {
 
     if (empty($options['urilv_token'])) {
 
-        echo '<p><a href="http://api.uri.lv/login.json?key=50d45a6bef51d&callback='.admin_url('options-general.php?page=urilv/urilv-feed.php').'">'.__('Connect to URI.LV', URILV_TEXTDOMAIN).'</a></p>';
+        echo '<p><a href="http://api.uri.lv/login.json?key=50d45a6bef51d&callback='.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'">'.__('Connect to URI.LV', URILV_TEXTDOMAIN).'</a></p>';
 
     } else {
 
         echo '<p>'.__('You are authenticated on URI.LV with the Twitter username:', URILV_TEXTDOMAIN).' <a href="http://twitter.com/'.$json->login.'" target="_blank">@'.$json->login.'</a></p>';
-        echo '<p><a href="'.admin_url('options-general.php?page=urilv/urilv-feed.php').'&token=reset">'.__('Disconnect from URI.LV', URILV_TEXTDOMAIN).'</a></p>';
+        echo '<p><a href="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'&token=reset">'.__('Disconnect from URI.LV', URILV_TEXTDOMAIN).'</a></p>';
 
     }
 
-    echo '<form action="'.admin_url('options-general.php?page=urilv/urilv-feed.php').'" method="post" id="urilv-conf">';
+    echo '<form action="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'" method="post" id="urilv-conf">';
 
     echo '<h3><label for="urilv_feed_url">'.__('Redirect my feeds here:', URILV_TEXTDOMAIN).'</label></h3>';
     echo '<p><select id="urilv_feed_url" name="urilv_feed_url" style="width: 400px;" />';
