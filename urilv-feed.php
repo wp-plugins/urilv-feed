@@ -5,7 +5,7 @@ Plugin URI: http://uri.lv/wordpress
 Description: Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 Author: Maxime VALETTE
 Author URI: http://maxime.sh
-Version: 1.0
+Version: 1.1
 */
 
 define('URILV_TEXTDOMAIN', 'urilv');
@@ -29,20 +29,78 @@ function urilv_config_page() {
 
 }
 
-function urilv_api_call($url, $params = array()) {
+function urilv_urlcompliant($nompage, $lowercase=true) {
 
-    $options = get_option('urilv');
+    $a = array('À','Á','Â','Ã','Ä','Å','Æ','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ð','Ñ','Ò','Ó','Ô','Õ','Ö','Ø','Ù','Ú','Û','Ü','Ý','ß','à','á','â','ã','ä','å','æ','ç','è','é','ê','ë','ì','í','î','ï','ñ','ò','ó','ô','õ','ö','ø','ù','ú','û','ü','ý','ÿ','A','a','A','a','A','a','C','c','C','c','C','c','C','c','D','d','Ð','d','E','e','E','e','E','e','E','e','E','e','G','g','G','g','G','g','G','g','H','h','H','h','I','i','I','i','I','i','I','i','I','i','','','J','j','K','k','L','l','L','l','L','l','','','L','l','N','n','N','n','N','n','','O','o','O','o','O','o','Œ','œ','R','r','R','r','R','r','S','s','S','s','S','s','Š','š','T','t','T','t','T','t','U','u','U','u','U','u','U','u','U','u','U','u','W','w','Y','y','Ÿ','Z','z','Z','z','Ž','ž','','ƒ','O','o','U','u','A','a','I','i','O','o','U','u','U','u','U','u','U','u','U','u','','','','','','','€','@','Š','¡');
 
-    $qs = '.json?key=50d45a6bef51d&token='.$options['urilv_token'];
+    $b = array('A','A','A','A','A','A','AE','C','E','E','E','E','I','I','I','I','D','N','O','O','O','O','O','O','U','U','U','U','Y','s','a','a','a','a','a','a','ae','c','e','e','e','e','i','i','i','i','n','o','o','o','o','o','o','u','u','u','u','y','y','A','a','A','a','A','a','C','c','C','c','C','c','C','c','D','d','D','d','E','e','E','e','E','e','E','e','E','e','G','g','G','g','G','g','G','g','H','h','H','h','I','i','I','i','I','i','I','i','I','i','IJ','ij','J','j','K','k','L','l','L','l','L','l','L','l','l','l','N','n','N','n','N','n','n','O','o','O','o','O','o','OE','oe','R','r','R','r','R','r','S','s','S','s','S','s','S','s','T','t','T','t','T','t','U','u','U','u','U','u','U','u','U','u','U','u','W','w','Y','y','Y','Z','z','Z','z','Z','z','s','f','O','o','U','u','A','a','I','i','O','o','U','u','U','u','U','u','U','u','U','u','A','a','AE','ae','O','o','e','a','s','i');
 
-    foreach ($params as $k => $v) {
+    $string = preg_replace(array('/[^a-zA-Z0-9 -]/','/[ -]+/','/^-|-$/'),array('','-',''),str_replace($a,$b,$nompage));
 
-        $qs .= '&'.$k.'='.urlencode($v);
+    if ($lowercase) {
+        $string = strtolower($string);
+    }
+
+    return $string;
+
+}
+
+function urilv_locale() {
+
+    $langs = explode(';', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+
+    $locale = 'en';
+
+    foreach ($langs as $lang) {
+
+        if (preg_match('/fr/', $lang)) {
+
+            $locale = 'fr';
+            break;
+
+        }
 
     }
 
-    $data = file_get_contents('http://api.uri.lv/'.$url.$qs);
-    $json = json_decode($data);
+    return $locale;
+
+}
+
+function urilv_api_call($url, $params = array(), $type='GET') {
+
+    $options = get_option('urilv');
+    $json = array();
+
+    $url .= '.json';
+
+    $params['key'] = '50d45a6bef51d';
+    $params['token'] = $options['urilv_token'];
+
+    $qs = http_build_query($params, '', '&');
+
+    if ($type == 'GET') {
+
+        $data = file_get_contents('http://api.uri.lv/'.$url.'?'.$qs);
+        $json = json_decode($data);
+
+    } elseif ($type == 'POST') {
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'http://api.uri.lv/'.$url);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'uri.lv/1.0 (http://uri.lv)');
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $qs);
+
+        $data = curl_exec($ch);
+        $json = json_decode($data);
+
+        curl_close($ch);
+
+    }
 
     return $json;
 
@@ -133,15 +191,36 @@ function urilv_conf() {
 
 		$updated = true;
 
-	}
+	} elseif (isset($_POST['create'])) {
+
+        $json = urilv_api_call('feeds/create', array('url' => $_POST['urilv_url'], 'alias' => $_POST['urilv_alias'], 'locale' => urilv_locale()), 'POST');
+
+        if (is_array($json->errors) && count($json->errors)) {
+
+            echo '<div id="message" class="error"><p>';
+            _e('There was something wrong with the feed creation:', URILV_TEXTDOMAIN);
+            echo ' '.$json->errors[0];
+            echo "</p></div>";
+
+        } else {
+
+            $options['urilv_feed_url'] = $_POST['urilv_alias'];
+
+            update_option('urilv', $options);
+
+            $updated = true;
+
+        }
+
+    }
 
     echo '<div class="wrap">';
 
     if ($updated) {
 
-	    echo '<div id="message" class="updated fade"><p>';
-	    _e('Configuration updated.', URILV_TEXTDOMAIN);
-	    echo '</p></div>';
+        echo '<div id="message" class="updated fade"><p>';
+        _e('Configuration updated.', URILV_TEXTDOMAIN);
+        echo '</p></div>';
 
     }
 
@@ -149,7 +228,7 @@ function urilv_conf() {
 
         $json = urilv_api_call('account');
 
-        if (is_array($json->error) && count($json->error)) {
+        if (is_array($json->errors) && count($json->errors)) {
 
             echo '<div id="message" class="error"><p>';
             _e('There was something wrong with your URI.LV authentication. Please retry.', URILV_TEXTDOMAIN);
@@ -165,15 +244,23 @@ function urilv_conf() {
 
     }
 
+    echo '<div id="form-conf"';
+
+    if ((is_array($json->feeds) && count($json->feeds) == 0)) {
+        echo ' style="display: none;"';
+    }
+
+    echo '>';
+
     echo '<h2>'.__('URI.LV Configuration', URILV_TEXTDOMAIN).'</h2>';
 
     echo '<div style="float: right; width: 350px">';
 
     echo '<h3>'.__('How does this work?', URILV_TEXTDOMAIN).'</h3>';
     echo '<p>'.__('This plugin automatically redirects all or parts of your existing feeds to URI.LV.', URILV_TEXTDOMAIN).'</p>';
-    echo '<p>'.__('First go to <a href="http://uri.lv">URI.LV</a> and create your feed. Then connect to URI.LV on this page. You will now be able to select the feeds you want to redirect to. You may optionally redirect your comments feed using the same procedure.', URILV_TEXTDOMAIN).'</p>';
+    echo '<p>'.__('You just have to connect to URI.LV on this page. You will now be able to create and select the feeds you want to redirect to. You may optionally redirect your comments feed using the same procedure.', URILV_TEXTDOMAIN).'</p>';
     echo '<p>'.__('Once you enter URLs your feeds will be redirected automatically and you do not need to take any further action.', URILV_TEXTDOMAIN).'</p>';
-    echo '<p>'.__('Additionally, when you publish a new article on your blog, URI.LV will be pinged by the AMQPConnection and your feed will be updated in realtime.', URILV_TEXTDOMAIN).'</p>';
+    echo '<p>'.__('Additionally, when you publish a new article on your blog, URI.LV will be pinged by the plugin and your feed will be updated in realtime.', URILV_TEXTDOMAIN).'</p>';
 
     echo '</div>';
 
@@ -186,85 +273,115 @@ function urilv_conf() {
         echo '<p>'.__('You are authenticated on URI.LV with the Twitter username:', URILV_TEXTDOMAIN).' <a href="http://twitter.com/'.$json->login.'" target="_blank">@'.$json->login.'</a></p>';
         echo '<p><a href="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'&token=reset">'.__('Disconnect from URI.LV', URILV_TEXTDOMAIN).'</a></p>';
 
-    }
+        echo '<form action="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'" method="post" id="urilv-conf">';
 
-    echo '<form action="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'" method="post" id="urilv-conf">';
+        echo '<h3><label for="urilv_feed_url">'.__('Redirect my feeds here:', URILV_TEXTDOMAIN).'</label></h3>';
+        echo '<p><select id="urilv_feed_url" name="urilv_feed_url" style="width: 400px;" />';
 
-    echo '<h3><label for="urilv_feed_url">'.__('Redirect my feeds here:', URILV_TEXTDOMAIN).'</label></h3>';
-    echo '<p><select id="urilv_feed_url" name="urilv_feed_url" style="width: 400px;" />';
+        echo '<option value=""';
+        if (empty($options['urilv_token'])) echo ' SELECTED';
+        echo '>'.__('None', URILV_TEXTDOMAIN).'</option>';
 
-    echo '<option value=""';
-    if (empty($options['urilv_token'])) echo ' SELECTED';
-    echo '>'.__('None', URILV_TEXTDOMAIN).'</option>';
+        if (is_array($json->feeds)) {
 
-    if (is_array($json->feeds)) {
+            foreach ($json->feeds as $feed) {
 
-        foreach ($json->feeds as $feed) {
+                echo '<option value="'.$feed->name.'"';
+                if ($options['urilv_feed_url'] == $feed->name) echo ' SELECTED';
+                echo '>http://feeds.uri.lv/'.$feed->name.'</option>';
 
-            echo '<option value="'.$feed->name.'"';
-            if ($options['urilv_feed_url'] == $feed->name) echo ' SELECTED';
-            echo '>http://feeds.uri.lv/'.$feed->name.'</option>';
-
-        }
-
-    }
-
-    echo '</select></p>';
-
-    echo '<p><a href="http://uri.lv/admin/feeds/new">'.__('Create a new feed on URI.LV', URILV_TEXTDOMAIN).' &raquo;</a></p>';
-
-    echo '<h3><label for="urilv_comment_url">'.__('Redirect my comments feed here:', URILV_TEXTDOMAIN).'</label></h3>';
-    echo '<p><select id="urilv_comment_url" name="urilv_comment_url" style="width: 400px;" />';
-
-    echo '<option value=""';
-    if (empty($options['urilv_token'])) echo ' SELECTED';
-    echo '>'.__('None', URILV_TEXTDOMAIN).'</option>';
-
-    if (is_array($json->feeds)) {
-
-        foreach ($json->feeds as $feed) {
-
-            echo '<option value="'.$feed->name.'"';
-            if ($options['urilv_comment_url'] == $feed->name) echo ' SELECTED';
-            echo '>http://feeds.uri.lv/'.$feed->name.'</option>';
+            }
 
         }
 
+        echo '</select></p>';
+
+        echo '<p><a href="javascript:;" onclick="document.getElementById(\'form-create\').style.display=\'block\';document.getElementById(\'form-conf\').style.display=\'none\';">'.__('Create a new feed on URI.LV', URILV_TEXTDOMAIN).' &raquo;</a></p>';
+
+        echo '<h3><label for="urilv_comment_url">'.__('Redirect my comments feed here:', URILV_TEXTDOMAIN).'</label></h3>';
+        echo '<p><select id="urilv_comment_url" name="urilv_comment_url" style="width: 400px;" />';
+
+        echo '<option value=""';
+        if (empty($options['urilv_token'])) echo ' SELECTED';
+        echo '>'.__('None', URILV_TEXTDOMAIN).'</option>';
+
+        if (is_array($json->feeds)) {
+
+            foreach ($json->feeds as $feed) {
+
+                echo '<option value="'.$feed->name.'"';
+                if ($options['urilv_comment_url'] == $feed->name) echo ' SELECTED';
+                echo '>http://feeds.uri.lv/'.$feed->name.'</option>';
+
+            }
+
+        }
+
+        echo '</select></p>';
+
+        echo '<p><a href="javascript:;" onclick="document.getElementById(\'form-create\').style.display=\'block\';document.getElementById(\'form-conf\').style.display=\'none\';">'.__('Create a new feed on URI.LV', URILV_TEXTDOMAIN).' &raquo;</a></p>';
+
+        echo '<h3>'.__('Advanced Options', URILV_TEXTDOMAIN).'</h3>';
+
+        echo '<p><input id="urilv_no_cats" name="urilv_no_cats" type="checkbox" value="1"';
+        if ($options['urilv_no_cats'] == 1) echo ' checked';
+        echo '/> <label for="urilv_no_cats">'.__('Do not redirect category or tag feeds.', URILV_TEXTDOMAIN).'</label></p>';
+
+        echo '<p><input id="urilv_append_cats" name="urilv_append_cats" type="checkbox" value="1"';
+        if ($options['urilv_append_cats'] == 1) echo ' checked';
+        echo '/> <label for="urilv_append_cats">'.__('Append category/tag to URL for category/tag feeds.', URILV_TEXTDOMAIN).' (<i>http://feeds.uri.lv/MyFeed<b>/category</b></i>)</label></p>';
+
+        echo '<p><input id="urilv_no_search" name="urilv_no_search" type="checkbox" value="1"';
+        if ($options['urilv_no_search'] == 1) echo ' checked';
+        echo '/> <label for="urilv_no_search">'.__('Do not redirect search result feeds.', URILV_TEXTDOMAIN).'</label></p>';
+
+        echo '<p><input id="urilv_no_author" name="urilv_no_author" type="checkbox" value="1"';
+        if ($options['urilv_no_author'] == 1) echo ' checked';
+        echo '/> <label for="urilv_no_author">'.__('Do not redirect author feeds.', URILV_TEXTDOMAIN).'</label></p>';
+
+        echo '<p><input id="urilv_no_redirect" name="urilv_no_redirect" type="checkbox" value="1"';
+        if ($options['urilv_no_redirect'] == 1) echo ' checked';
+        echo '/> <label for="urilv_no_redirect">'.__('Do not redirect ANY feeds (useful if you just want the plugin for realtime updates).', URILV_TEXTDOMAIN).'</label></p>';
+
+        echo '<p><input id="urilv_no_ping" name="urilv_no_ping" type="checkbox" value="1"';
+        if ($options['urilv_no_ping'] == 1) echo ' checked';
+        echo '/> <label for="urilv_no_ping">'.__('Do not ping URI.LV when a new article is published.', URILV_TEXTDOMAIN).'</label></p>';
+
+        echo '<p class="submit" style="text-align: left">';
+        wp_nonce_field('urilv', 'urilv-admin');
+        echo '<input type="submit" name="submit" value="'.__('Save', URILV_TEXTDOMAIN).' &raquo;" /></p></form>';
+
+        echo '</div>';
+
+        echo '<div id="form-create"';
+
+        if ((is_array($json->feeds) && count($json->feeds) > 0) || !is_array($json->feeds)) {
+            echo ' style="display: none;"';
+        }
+
+        echo '>';
+
+        echo '<h2>'.__('Create a new URI.LV feed', URILV_TEXTDOMAIN).'</h2>';
+
+        echo '<p>'.__('Fill the form below to create your feed on URI.LV.', URILV_TEXTDOMAIN).'</p>';
+
+        echo '<form action="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'" method="post" id="urilv-create">';
+
+        echo '<h3><label for="urilv_url">'.__('Original feed URL:', URILV_TEXTDOMAIN).'</label></h3>';
+        echo '<p><input type="text" id="urilv_url" name="urilv_url" value="'.get_bloginfo('rss2_url').'" style="width: 400px;" /></p>';
+
+        echo '<h3><label for="urilv_alias">'.__('Alias name for the feed:', URILV_TEXTDOMAIN).'</label></h3>';
+        echo '<p>http://feeds.uri.lv/ <input type="text" id="urilv_alias" name="urilv_alias" value="'.urilv_urlcompliant(get_bloginfo('name')).'" style="width: 150px;" /></p>';
+
+        echo '<p class="submit" style="text-align: left">';
+        wp_nonce_field('urilv', 'urilv-admin');
+        echo '<input type="submit" name="create" value="'.__('Create', URILV_TEXTDOMAIN).' &raquo;" /></p></form>';
+
+        echo '</div>';
+
+        echo '</div>';
+
     }
-
-    echo '</select></p>';
-
-    echo '<p><a href="http://uri.lv/admin/feeds/new">'.__('Create a new feed on URI.LV', URILV_TEXTDOMAIN).' &raquo;</a></p>';
-
-    echo '<h3>'.__('Advanced Options', URILV_TEXTDOMAIN).'</h3>';
-
-    echo '<p><input id="urilv_no_cats" name="urilv_no_cats" type="checkbox" value="1"';
-    if ($options['urilv_no_cats'] == 1) echo ' checked';
-	echo '/> <label for="urilv_no_cats">'.__('Do not redirect category or tag feeds.', URILV_TEXTDOMAIN).'</label></p>';
-
-    echo '<p><input id="urilv_append_cats" name="urilv_append_cats" type="checkbox" value="1"';
-    if ($options['urilv_append_cats'] == 1) echo ' checked';
-    echo '/> <label for="urilv_append_cats">'.__('Append category/tag to URL for category/tag feeds.', URILV_TEXTDOMAIN).' (<i>http://feeds.uri.lv/MyFeed<b>/category</b></i>)</label></p>';
-
-    echo '<p><input id="urilv_no_search" name="urilv_no_search" type="checkbox" value="1"';
-    if ($options['urilv_no_search'] == 1) echo ' checked';
-    echo '/> <label for="urilv_no_search">'.__('Do not redirect search result feeds.', URILV_TEXTDOMAIN).'</label></p>';
-
-    echo '<p><input id="urilv_no_author" name="urilv_no_author" type="checkbox" value="1"';
-    if ($options['urilv_no_author'] == 1) echo ' checked';
-    echo '/> <label for="urilv_no_author">'.__('Do not redirect author feeds.', URILV_TEXTDOMAIN).'</label></p>';
-
-    echo '<p><input id="urilv_no_redirect" name="urilv_no_redirect" type="checkbox" value="1"';
-    if ($options['urilv_no_redirect'] == 1) echo ' checked';
-    echo '/> <label for="urilv_no_redirect">'.__('Do not redirect ANY feeds (useful if you just want the plugin for realtime updates).', URILV_TEXTDOMAIN).'</label></p>';
-
-    echo '<p><input id="urilv_no_ping" name="urilv_no_ping" type="checkbox" value="1"';
-    if ($options['urilv_no_ping'] == 1) echo ' checked';
-    echo '/> <label for="urilv_no_ping">'.__('Do not ping URI.LV when a new article is published.', URILV_TEXTDOMAIN).'</label></p>';
-
-    echo '<p class="submit" style="text-align: left">';
-    wp_nonce_field('urilv', 'urilv-admin');
-    echo '<input type="submit" name="submit" value="'.__('Save', URILV_TEXTDOMAIN).' &raquo;" /></p></form></div>';
 
 }
 

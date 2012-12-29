@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: URI.LV Feed Plugin\n"
-"POT-Creation-Date: 2012-12-21 18:09+0100\n"
-"PO-Revision-Date: 2012-12-21 18:15+0100\n"
+"POT-Creation-Date: 2012-12-29 20:14+0100\n"
+"PO-Revision-Date: 2012-12-29 20:17+0100\n"
 "Last-Translator: Maxime VALETTE <maxime@maximevalette.com>\n"
 "Language-Team: Maxime VALETTE <maxime@maximevalette.com>\n"
 "Language: fr_FR\n"
@@ -16,30 +16,34 @@ msgstr ""
 "X-Poedit-SearchPath-0: /Users/maxime/Sites/wordpress/wp-content/plugins/"
 "urilv-feed\n"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:24
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:25
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:24
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:25
 msgid "URI.LV"
 msgstr "URI.LV"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:143
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:201
+msgid "There was something wrong with the feed creation:"
+msgstr "Une erreur s'est produite avec l'identification URI.LV :"
+
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:222
 msgid "Configuration updated."
 msgstr "Configuration mise à jour."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:155
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:234
 msgid ""
 "There was something wrong with your URI.LV authentication. Please retry."
 msgstr ""
 "Une erreur s'est produite avec l'identification URI.LV. Veuillez réessayer."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:168
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:255
 msgid "URI.LV Configuration"
 msgstr "Configuration de URI.LV"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:172
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:259
 msgid "How does this work?"
 msgstr "Comment ça marche ?"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:173
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:260
 msgid ""
 "This plugin automatically redirects all or parts of your existing feeds to "
 "URI.LV."
@@ -47,19 +51,17 @@ msgstr ""
 "Cette extension redirige automatiquement tout ou partie de vos flux "
 "existants vers URI.LV."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:174
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:261
 msgid ""
-"First go to <a href=\"http://uri.lv\">URI.LV</a> and create your feed. Then "
-"connect to URI.LV on this page. You will now be able to select the feeds you "
-"want to redirect to. You may optionally redirect your comments feed using "
-"the same procedure."
+"You just have to connect to URI.LV on this page. You will now be able to "
+"create and select the feeds you want to redirect to. You may optionally "
+"redirect your comments feed using the same procedure."
 msgstr ""
-"Tout d'abord allez sur <a href=\"http://uri.lv\">URI.LV</a> et créez votre "
-"flux. Ensuite connectez-vous à URI.LV sur cette page. Vous pouvez maintenant "
+"Connectez-vous à URI.LV sur cette page. Vous pouvez maintenant créer et "
 "sélectionner les flux vers lesquels vous souhaitez rediriger. Vous pouvez "
 "aussi rediriger le flux des commentaires en faisant la même procédure."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:175
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:262
 msgid ""
 "Once you enter URLs your feeds will be redirected automatically and you do "
 "not need to take any further action."
@@ -67,7 +69,7 @@ msgstr ""
 "Une fois que vous avez entré les URL, vos flux seront automatiquement "
 "redirigés et vous n'avez plus rien d'autre à faire."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:176
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:263
 msgid ""
 "Additionally, when you publish a new article on your blog, URI.LV will be "
 "pinged by the plugin and your feed will be updated in realtime."
@@ -75,57 +77,57 @@ msgstr ""
 "En plus, lorsque vous publiez un nouvel article sur votre blog, URI.LV sera "
 "notifié par l'extension et votre flux sera mis à jour en temps réel."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:182
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:269
 msgid "Connect to URI.LV"
 msgstr "Se connecter à URI.LV"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:186
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:273
 msgid "You are authenticated on URI.LV with the Twitter username:"
 msgstr "Vous êtes connecté à URI.LV avec ce nom d'utilisateur Twitter :"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:187
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:274
 msgid "Disconnect from URI.LV"
 msgstr "Se déconnecter d'URI.LV"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:193
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:278
 msgid "Redirect my feeds here:"
 msgstr "Rediriger mes flux ici :"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:198
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:221
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:283
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:306
 msgid "None"
 msgstr "Aucun"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:214
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:237
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:299
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:322
 msgid "Create a new feed on URI.LV"
 msgstr "Créer un nouveau flux sur URI.LV"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:216
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:301
 msgid "Redirect my comments feed here:"
 msgstr "Rediriger le flux des commentaires ici :"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:239
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:324
 msgid "Advanced Options"
 msgstr "Options avancées"
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:243
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:328
 msgid "Do not redirect category or tag feeds."
 msgstr "Ne pas rediriger les flux de tags ou catégories."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:247
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:332
 msgid "Append category/tag to URL for category/tag feeds."
 msgstr "Ajouter la catégorie ou le tag à l'URL des flux de catégorie/tag."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:251
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:336
 msgid "Do not redirect search result feeds."
 msgstr "Ne pas rediriger les flux de résultats de recherche."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:255
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:340
 msgid "Do not redirect author feeds."
 msgstr "Ne pas rediriger les flux des auteurs."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:259
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:344
 msgid ""
 "Do not redirect ANY feeds (useful if you just want the plugin for realtime "
 "updates)."
@@ -133,10 +135,30 @@ msgstr ""
 "Ne rediriger AUCUN flux (si vous voulez l'extension uniquement pour les "
 "mises à jour en temps réel)."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:263
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:348
 msgid "Do not ping URI.LV when a new article is published."
 msgstr "Ne pas informer URI.LV lorsqu'un nouvel article est publié."
 
-#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv/urilv.php:267
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:352
 msgid "Save"
 msgstr "Sauvegarder"
+
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:364
+msgid "Create a new URI.LV feed"
+msgstr "Créer un nouveau flux sur URI.LV"
+
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:366
+msgid "Fill the form below to create your feed on URI.LV."
+msgstr "Remplissez le formulaire ci-dessous pour créer votre flux sur URI.LV."
+
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:370
+msgid "Original feed URL:"
+msgstr "URL du flux original :"
+
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:373
+msgid "Alias name for the feed:"
+msgstr "Alias pour le flux :"
+
+#: /Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/urilv-feed.php:378
+msgid "Create"
+msgstr "Créer"
