@@ -270,7 +270,7 @@ function urilv_conf() {
 
     } else {
 
-        echo '<p>'.__('You are authenticated on URI.LV with the Twitter username:', URILV_TEXTDOMAIN).' <a href="http://twitter.com/'.$json->login.'" target="_blank">@'.$json->login.'</a></p>';
+        echo '<p>'.__('You are authenticated on URI.LV with the username:', URILV_TEXTDOMAIN).' '.$json->login.'</p>';
         echo '<p><a href="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'&token=reset">'.__('Disconnect from URI.LV', URILV_TEXTDOMAIN).'</a></p>';
 
         echo '<form action="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'" method="post" id="urilv-conf">';
