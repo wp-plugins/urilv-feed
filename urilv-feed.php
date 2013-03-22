@@ -5,7 +5,7 @@ Plugin URI: http://uri.lv/wordpress
 Description: Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 Author: Maxime VALETTE
 Author URI: http://maxime.sh
-Version: 1.1
+Version: 1.1.1
 */
 
 define('URILV_TEXTDOMAIN', 'urilv');
