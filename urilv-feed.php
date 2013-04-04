@@ -5,7 +5,7 @@ Plugin URI: http://uri.lv/wordpress
 Description: Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 Author: Maxime VALETTE
 Author URI: http://maxime.sh
-Version: 1.1.2
+Version: 1.2
 */
 
 define('URILV_TEXTDOMAIN', 'urilv');
@@ -116,7 +116,9 @@ function urilv_conf() {
 	$options = get_option('urilv');
 
     if (!isset($options['urilv_token'])) $options['urilv_token'] = null;
+    if (!isset($options['urilv_feed_id'])) $options['urilv_feed_id'] = null;
     if (!isset($options['urilv_feed_url'])) $options['urilv_feed_url'] = null;
+    if (!isset($options['urilv_comment_id'])) $options['urilv_comment_id'] = null;
     if (!isset($options['urilv_comment_url'])) $options['urilv_comment_url'] = null;
     if (!isset($options['urilv_no_redirect'])) $options['urilv_no_redirect'] = 0;
     if (!isset($options['urilv_no_cats'])) $options['urilv_no_cats'] = 0;
@@ -142,16 +144,18 @@ function urilv_conf() {
 
 		if (isset($_POST['urilv_feed_url'])) {
 			$urilv_url = $_POST['urilv_feed_url'];
-			if ($urilv_url != null) $urilv_url = $urilv_url;
+			$urilv_id = urilv_get_feed_name($urilv_url);
 		} else {
             $urilv_url = null;
+            $urilv_id = null;
 		}
 
 		if (isset($_POST['urilv_comment_url'])) {
 			$urilv_comment_url = $_POST['urilv_comment_url'];
-			if ($urilv_comment_url != null) $urilv_comment_url = $urilv_comment_url;
+            $urilv_comment_id = urilv_get_feed_name($urilv_comment_url);
 		} else {
             $urilv_comment_url = null;
+            $urilv_comment_id = null;
 		}
 
 		if (isset($_POST['urilv_append_cats'])) {
@@ -185,7 +189,9 @@ function urilv_conf() {
 		}
 
 		$options['urilv_feed_url'] = $urilv_url;
+        $options['urilv_feed_id'] = $urilv_id;
 		$options['urilv_comment_url'] = $urilv_comment_url;
+        $options['urilv_comment_id'] = $urilv_comment_id;
 		$options['urilv_append_cats'] = $urilv_append_cats;
         $options['urilv_no_redirect'] = $urilv_no_redirect;
 		$options['urilv_no_cats'] = $urilv_no_cats;
@@ -209,7 +215,8 @@ function urilv_conf() {
 
         } else {
 
-            $options['urilv_feed_url'] = $_POST['urilv_alias'];
+            $options['urilv_feed_id'] = $_POST['urilv_alias'];
+            $options['urilv_feed_url'] = 'http://feeds.uri.lv/'.$_POST['urilv_alias'];
 
             update_option('urilv', $options);
 
@@ -241,7 +248,9 @@ function urilv_conf() {
 
             $options['urilv_token'] = null;
             $options['urilv_feed_url'] = null;
+            $options['urilv_feed_id'] = null;
             $options['urilv_comment_url'] = null;
+            $options['urilv_comment_id'] = null;
 
             update_option('urilv', $options);
 
@@ -291,9 +300,9 @@ function urilv_conf() {
 
             foreach ($json->feeds as $feed) {
 
-                echo '<option value="'.$feed->name.'"';
-                if ($options['urilv_feed_url'] == $feed->name) echo ' SELECTED';
-                echo '>http://feeds.uri.lv/'.$feed->name.'</option>';
+                echo '<option value="'.$feed->url.'"';
+                if ($options['urilv_feed_id'] == $feed->name) echo ' SELECTED';
+                echo '>'.$feed->url.'</option>';
 
             }
 
@@ -314,9 +323,9 @@ function urilv_conf() {
 
             foreach ($json->feeds as $feed) {
 
-                echo '<option value="'.$feed->name.'"';
-                if ($options['urilv_comment_url'] == $feed->name) echo ' SELECTED';
-                echo '>http://feeds.uri.lv/'.$feed->name.'</option>';
+                echo '<option value="'.$feed->url.'"';
+                if ($options['urilv_comment_id'] == $feed->name) echo ' SELECTED';
+                echo '>'.$feed->url.'</option>';
 
             }
 
@@ -394,7 +403,7 @@ function urilv_conf() {
 function urilv_redirect() {
 
 	global $feed, $withcomments, $wp, $wpdb, $wp_version, $wp_db_version;
-	
+
 	// Do nothing if not a feed
 	if (!is_feed()) return;
 	
@@ -411,7 +420,9 @@ function urilv_redirect() {
 	$options = get_option('urilv');
     if (!isset($options['urilv_token'])) $options['urilv_token'] = null;
 	if (!isset($options['urilv_feed_url'])) $options['urilv_feed_url'] = null;
+    if (!isset($options['urilv_feed_id'])) $options['urilv_feed_id'] = null;
     if (!isset($options['urilv_comment_url'])) $options['urilv_comment_url'] = null;
+    if (!isset($options['urilv_comment_id'])) $options['urilv_comment_id'] = null;
     if (!isset($options['urilv_no_redirect'])) $options['urilv_no_redirect'] = 0;
     if (!isset($options['urilv_no_cats'])) $options['urilv_no_cats'] = 0;
     if (!isset($options['urilv_no_search'])) $options['urilv_no_search'] = 0;
@@ -422,11 +433,11 @@ function urilv_redirect() {
     $comment_url = null;
 
 	if (!empty($options['urilv_feed_url'])) {
-        $feed_url = 'http://feeds.uri.lv/'.$options['urilv_feed_url'];
+        $feed_url = $options['urilv_feed_url'];
     }
 
     if (!empty($options['urilv_comment_url'])) {
-        $comment_url = 'http://feeds.uri.lv/'.$options['urilv_comment_url'];
+        $comment_url = $options['urilv_comment_url'];
     }
 
     if ($options['urilv_no_redirect'] == 1 || ($feed_url == null && $comment_url == null)) return;
@@ -515,7 +526,7 @@ function urilv_publish_post() {
 
     if ($options['urilv_no_ping'] == 0) {
 
-        urilv_api_call('feeds/ping', array('feed' => $options['urilv_feed_url']));
+        urilv_api_call('feeds/ping', array('feed' => $options['urilv_feed_id']));
 
     }
 
@@ -523,3 +534,28 @@ function urilv_publish_post() {
 
 // Action when a post is published
 add_action('publish_post', 'urilv_publish_post');
+
+function urilv_get_feed_name($url) {
+
+    $infos = parse_url($url);
+
+    return substr($infos['path'], 1);
+
+}
+
+function urilv_admin_notice() {
+
+    $options = get_option('urilv');
+
+    if (current_user_can('manage_options') &&
+        ((!empty($options['urilv_feed_url']) && !preg_match('/^http/', $options['urilv_feed_url'])) ||
+        (!empty($options['urilv_comment_url']) && !preg_match('/^http/', $options['urilv_comment_url'])))) {
+
+        echo '<div class="error"><p>'.__('Warning: The options have changed. You have to update your URI.LV settings.', URILV_TEXTDOMAIN).' <a href="'.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'">'.__('Update settings', URILV_TEXTDOMAIN).' &rarr;</a></p></div>';
+
+    }
+
+}
+
+// Admin notice
+add_action('admin_notices', 'urilv_admin_notice');
