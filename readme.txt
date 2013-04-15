@@ -4,7 +4,7 @@ Donate link: http://maxime.sh/paypal
 Tags: uri.lv, redirect, rss, feed, feedburner
 Requires at least: 3.0
 Tested up to: 3.5.1
-Stable tag: 1.2
+Stable tag: 1.2.1
 
 Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 
@@ -23,6 +23,9 @@ Additionally, every time you publish a new article, a ping is sent to URI.LV to 
 3. Configure your feed from the new URI.LV Settings submenu
 
 == Changelog ==
+
+= 1.2.1 =
+* The plugin now deletes all of its settings when the user disconnects from URI.LV.
 
 = 1.2 =
 * Now supports custom hostnames.
