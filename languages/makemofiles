@@ -1,0 +1,13 @@
+#!/bin/sh
+
+DIR=/Users/maxime/Sites/wordpress/wp-content/plugins/urilv-feed/languages
+FILES=`find $DIR -name "*.po" -exec basename {} .po \;`
+
+for f in $FILES; do
+	if [ ! -e "$DIR/$f.mo" ]; then
+		echo "Compiling $f..."
+		msgfmt "$DIR/$f.po" -o "$DIR/$f.mo"
+	fi
+done
+
+echo "DONE"
