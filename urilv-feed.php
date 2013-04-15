@@ -5,7 +5,7 @@ Plugin URI: http://uri.lv/wordpress
 Description: Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 Author: Maxime VALETTE
 Author URI: http://maxime.sh
-Version: 1.2.1
+Version: 1.2.2
 */
 
 define('URILV_TEXTDOMAIN', 'urilv');
@@ -502,7 +502,9 @@ function urilv_redirect() {
 	// Redirect comment feed
 	if ($feed == 'comments-rss2' || is_single() || $withcomments) {
 		if ($comment_url != null) {
-			header("Location: ".$comment_url);
+            header('Cache-Control: no-cache, must-revalidate');
+            header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+            wp_redirect($comment_url, 307);
 			exit;
 		}
 	} else {
@@ -522,7 +524,9 @@ function urilv_redirect() {
 				} else {
 					if ($feed_url != null) {
 						// Redirect the feed
-						header("Location: ".$feed_url);
+                        header('Cache-Control: no-cache, must-revalidate');
+                        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+                        wp_redirect($feed_url, 307);
                         exit;
 					}
 				}
@@ -532,7 +536,7 @@ function urilv_redirect() {
 }
 
 // Handle feed redirections
-add_action('template_redirect', 'urilv_redirect');
+add_action('template_redirect', 'urilv_redirect', 1);
 
 // Ping URI.LV when there is a new post
 function urilv_publish_post() {
