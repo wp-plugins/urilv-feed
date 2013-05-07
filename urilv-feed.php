@@ -5,7 +5,7 @@ Plugin URI: http://uri.lv/wordpress
 Description: Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 Author: Maxime VALETTE
 Author URI: http://maxime.sh
-Version: 1.2.2
+Version: 1.2.3
 */
 
 define('URILV_TEXTDOMAIN', 'urilv');
@@ -113,18 +113,7 @@ function urilv_api_call($url, $params = array(), $type='GET') {
 
 function urilv_conf() {
 
-	$options = get_option('urilv');
-
-    if (!isset($options['urilv_token'])) $options['urilv_token'] = null;
-    if (!isset($options['urilv_feed_id'])) $options['urilv_feed_id'] = null;
-    if (!isset($options['urilv_feed_url'])) $options['urilv_feed_url'] = null;
-    if (!isset($options['urilv_comment_id'])) $options['urilv_comment_id'] = null;
-    if (!isset($options['urilv_comment_url'])) $options['urilv_comment_url'] = null;
-    if (!isset($options['urilv_no_redirect'])) $options['urilv_no_redirect'] = 0;
-    if (!isset($options['urilv_no_cats'])) $options['urilv_no_cats'] = 0;
-    if (!isset($options['urilv_no_search'])) $options['urilv_no_search'] = 0;
-    if (!isset($options['urilv_no_author'])) $options['urilv_no_author'] = 0;
-    if (!isset($options['urilv_no_ping'])) $options['urilv_no_ping'] = 0;
+    $options = urilv_get_options();
 
 	$updated = false;
 
@@ -144,6 +133,7 @@ function urilv_conf() {
             $options['urilv_no_search'] = 0;
             $options['urilv_no_author'] = 0;
             $options['urilv_no_ping'] = 0;
+            $options['urilv_debug'] = 0;
 
         }
 
@@ -203,6 +193,12 @@ function urilv_conf() {
             $urilv_no_author = 0;
 		}
 
+        if (isset($_POST['urilv_debug'])) {
+            $urilv_debug = $_POST['urilv_debug'];
+        } else {
+            $urilv_debug = 0;
+        }
+
 		$options['urilv_feed_url'] = $urilv_url;
         $options['urilv_feed_id'] = $urilv_id;
 		$options['urilv_comment_url'] = $urilv_comment_url;
@@ -212,6 +208,7 @@ function urilv_conf() {
 		$options['urilv_no_cats'] = $urilv_no_cats;
 		$options['urilv_no_search'] = $urilv_no_search;
 		$options['urilv_no_author'] = $urilv_no_author;
+        $options['urilv_debug'] = $urilv_debug;
 
 		update_option('urilv', $options);
 
@@ -376,6 +373,10 @@ function urilv_conf() {
         if ($options['urilv_no_ping'] == 1) echo ' checked';
         echo '/> <label for="urilv_no_ping">'.__('Do not ping URI.LV when a new article is published.', URILV_TEXTDOMAIN).'</label></p>';
 
+        echo '<p><input id="urilv_debug" name="urilv_debug" type="checkbox" value="1"';
+        if ($options['urilv_debug'] == 1) echo ' checked';
+        echo '/> <label for="urilv_debug">'.__('Activate debug mode.', URILV_TEXTDOMAIN).'</label></p>';
+
         echo '<p class="submit" style="text-align: left">';
         wp_nonce_field('urilv', 'urilv-admin');
         echo '<input type="submit" name="submit" value="'.__('Save', URILV_TEXTDOMAIN).' &raquo;" /></p></form>';
@@ -421,7 +422,25 @@ function urilv_redirect() {
 
 	// Do nothing if not a feed
 	if (!is_feed()) return;
-	
+
+    // Do nothing if not configured
+    $options = urilv_get_options();
+
+    if ($options['urilv_debug'] == '1' && isset($_GET['debug'])) {
+
+        var_dump($_SERVER);
+
+        if (isset($_GET['disable'])) {
+
+            $options['urilv_debug'] = '0';
+            update_option('urilv', $options);
+
+        }
+
+        die;
+
+    }
+
 	// Do nothing if uri.lv is the user-agent
 	if (preg_match('/uri\.lv/i', $_SERVER['HTTP_USER_AGENT'])) return;
 
@@ -430,19 +449,6 @@ function urilv_redirect() {
 	
 	// Avoid redirecting Googlebot to avoid sitemap feeds issues
 	if (preg_match('/googlebot/i', $_SERVER['HTTP_USER_AGENT'])) return;
-	
-	// Do nothing if not configured
-	$options = get_option('urilv');
-    if (!isset($options['urilv_token'])) $options['urilv_token'] = null;
-	if (!isset($options['urilv_feed_url'])) $options['urilv_feed_url'] = null;
-    if (!isset($options['urilv_feed_id'])) $options['urilv_feed_id'] = null;
-    if (!isset($options['urilv_comment_url'])) $options['urilv_comment_url'] = null;
-    if (!isset($options['urilv_comment_id'])) $options['urilv_comment_id'] = null;
-    if (!isset($options['urilv_no_redirect'])) $options['urilv_no_redirect'] = 0;
-    if (!isset($options['urilv_no_cats'])) $options['urilv_no_cats'] = 0;
-    if (!isset($options['urilv_no_search'])) $options['urilv_no_search'] = 0;
-    if (!isset($options['urilv_no_author'])) $options['urilv_no_author'] = 0;
-    if (!isset($options['urilv_no_ping'])) $options['urilv_no_ping'] = 0;
 
     $feed_url = null;
     $comment_url = null;
@@ -536,7 +542,14 @@ function urilv_redirect() {
 }
 
 // Handle feed redirections
-add_action('template_redirect', 'urilv_redirect', 1);
+
+if (!preg_match('/uri\.lv/i', $_SERVER['HTTP_USER_AGENT']) &&
+    !preg_match('/feedvalidator/i', $_SERVER['HTTP_USER_AGENT']) &&
+    !preg_match('/googlebot/i', $_SERVER['HTTP_USER_AGENT'])) {
+
+    add_action('template_redirect', 'urilv_redirect', 1);
+
+}
 
 // Ping URI.LV when there is a new post
 function urilv_publish_post() {
@@ -578,3 +591,22 @@ function urilv_admin_notice() {
 
 // Admin notice
 add_action('admin_notices', 'urilv_admin_notice');
+
+function urilv_get_options() {
+
+    $options = get_option('urilv');
+    if (!isset($options['urilv_token'])) $options['urilv_token'] = null;
+    if (!isset($options['urilv_feed_url'])) $options['urilv_feed_url'] = null;
+    if (!isset($options['urilv_feed_id'])) $options['urilv_feed_id'] = null;
+    if (!isset($options['urilv_comment_url'])) $options['urilv_comment_url'] = null;
+    if (!isset($options['urilv_comment_id'])) $options['urilv_comment_id'] = null;
+    if (!isset($options['urilv_no_redirect'])) $options['urilv_no_redirect'] = 0;
+    if (!isset($options['urilv_no_cats'])) $options['urilv_no_cats'] = 0;
+    if (!isset($options['urilv_no_search'])) $options['urilv_no_search'] = 0;
+    if (!isset($options['urilv_no_author'])) $options['urilv_no_author'] = 0;
+    if (!isset($options['urilv_no_ping'])) $options['urilv_no_ping'] = 0;
+    if (!isset($options['urilv_debug'])) $options['urilv_debug'] = 0;
+
+    return $options;
+
+}
