@@ -3,8 +3,8 @@ Contributors: maximevalette
 Donate link: http://maxime.sh/paypal
 Tags: uri.lv, redirect, rss, feed, feedburner
 Requires at least: 3.0
-Tested up to: 3.5.1
-Stable tag: 1.2.2
+Tested up to: 4.0
+Stable tag: 1.2.4
 
 Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 
@@ -23,6 +23,12 @@ Additionally, every time you publish a new article, a ping is sent to URI.LV to 
 3. Configure your feed from the new URI.LV Settings submenu
 
 == Changelog ==
+
+= 1.2.4 =
+* Changed the URI.LV name to FeedPress. Use the new plugin!
+
+= 1.2.3 =
+* Resolves some caching issues as well, and debug mode.
 
 = 1.2.2 =
 * Trying to resolve some caching issues with the template_redirect action.
