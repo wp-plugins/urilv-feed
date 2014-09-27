@@ -5,7 +5,7 @@ Plugin URI: http://uri.lv/wordpress
 Description: Redirects all feeds to an URI.LV feed and enables realtime feed updates.
 Author: Maxime VALETTE
 Author URI: http://maxime.sh
-Version: 1.2.3
+Version: 1.2.4
 */
 
 define('URILV_TEXTDOMAIN', 'urilv');
@@ -81,7 +81,7 @@ function urilv_api_call($url, $params = array(), $type='GET') {
     if ($type == 'GET') {
 
         $ch = curl_init();
-        curl_setopt ($ch, CURLOPT_URL, 'http://api.uri.lv/'.$url.'?'.$qs);
+        curl_setopt ($ch, CURLOPT_URL, 'http://api.feedpress.it/'.$url.'?'.$qs);
         curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
         $data = curl_exec($ch);
         curl_close($ch);
@@ -91,8 +91,8 @@ function urilv_api_call($url, $params = array(), $type='GET') {
     } elseif ($type == 'POST') {
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://api.uri.lv/'.$url);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'uri.lv/1.0 (http://uri.lv)');
+        curl_setopt($ch, CURLOPT_URL, 'http://api.feedpress.it/'.$url);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'FeedPress/1.0 (https://feed.press)');
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -228,7 +228,7 @@ function urilv_conf() {
         } else {
 
             $options['urilv_feed_id'] = $_POST['urilv_alias'];
-            $options['urilv_feed_url'] = 'http://feeds.uri.lv/'.$_POST['urilv_alias'];
+            $options['urilv_feed_url'] = 'http://feedpress.me/'.$_POST['urilv_alias'];
 
             update_option('urilv', $options);
 
@@ -292,7 +292,7 @@ function urilv_conf() {
 
     if (empty($options['urilv_token'])) {
 
-        echo '<p><a href="http://api.uri.lv/login.json?key=50d45a6bef51d&callback='.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'">'.__('Connect to URI.LV', URILV_TEXTDOMAIN).'</a></p>';
+        echo '<p><a href="http://api.feedpress.it/login.json?key=50d45a6bef51d&callback='.admin_url('options-general.php?page=urilv-feed/urilv-feed.php').'">'.__('Connect to URI.LV', URILV_TEXTDOMAIN).'</a></p>';
 
     } else {
 
@@ -355,7 +355,7 @@ function urilv_conf() {
 
         echo '<p><input id="urilv_append_cats" name="urilv_append_cats" type="checkbox" value="1"';
         if ($options['urilv_append_cats'] == 1) echo ' checked';
-        echo '/> <label for="urilv_append_cats">'.__('Append category/tag to URL for category/tag feeds.', URILV_TEXTDOMAIN).' (<i>http://feeds.uri.lv/MyFeed<b>/category</b></i>)</label></p>';
+        echo '/> <label for="urilv_append_cats">'.__('Append category/tag to URL for category/tag feeds.', URILV_TEXTDOMAIN).' (<i>http://feedpress.me/MyFeed<b>/category</b></i>)</label></p>';
 
         echo '<p><input id="urilv_no_search" name="urilv_no_search" type="checkbox" value="1"';
         if ($options['urilv_no_search'] == 1) echo ' checked';
@@ -401,7 +401,7 @@ function urilv_conf() {
         echo '<p><input type="text" id="urilv_url" name="urilv_url" value="'.get_bloginfo('rss2_url').'" style="width: 400px;" /></p>';
 
         echo '<h3><label for="urilv_alias">'.__('Alias name for the feed:', URILV_TEXTDOMAIN).'</label></h3>';
-        echo '<p>http://feeds.uri.lv/ <input type="text" id="urilv_alias" name="urilv_alias" value="'.urilv_urlcompliant(get_bloginfo('name')).'" style="width: 150px;" /></p>';
+        echo '<p>http://feedpress.me/ <input type="text" id="urilv_alias" name="urilv_alias" value="'.urilv_urlcompliant(get_bloginfo('name')).'" style="width: 150px;" /></p>';
 
         echo '<p class="submit" style="text-align: left">';
         wp_nonce_field('urilv', 'urilv-admin');
@@ -441,8 +441,8 @@ function urilv_redirect() {
 
     }
 
-	// Do nothing if uri.lv is the user-agent
-	if (preg_match('/uri\.lv/i', $_SERVER['HTTP_USER_AGENT'])) return;
+	// Do nothing if FeedPress is the user-agent
+	if (preg_match('/FeedPress/i', $_SERVER['HTTP_USER_AGENT'])) return;
 
     // Do nothing if feedvalidator is the user-agent
     if (preg_match('/feedvalidator/i', $_SERVER['HTTP_USER_AGENT'])) return;
@@ -578,6 +578,8 @@ function urilv_get_feed_name($url) {
 function urilv_admin_notice() {
 
     $options = get_option('urilv');
+
+	echo '<div class="error"><p>'.__('Warning: URI.LV is now FeedPress. Please remove this plugin and install the FeedPress WordPress plugin instead.', URILV_TEXTDOMAIN).' <a href="https://wordpress.org/plugins/feedpress/" target="_blank">'.__('Download plugin', URILV_TEXTDOMAIN).' &rarr;</a></p></div>';
 
     if (current_user_can('manage_options') &&
         ((!empty($options['urilv_feed_url']) && !preg_match('/^http/', $options['urilv_feed_url'])) ||
