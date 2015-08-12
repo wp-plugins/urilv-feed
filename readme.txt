@@ -3,7 +3,7 @@ Contributors: maximevalette
 Donate link: http://maxime.sh/paypal
 Tags: uri.lv, redirect, rss, feed, feedburner
 Requires at least: 3.0
-Tested up to: 4.0
+Tested up to: 4.3
 Stable tag: 1.2.4
 
 Redirects all feeds to an URI.LV feed and enables realtime feed updates.
